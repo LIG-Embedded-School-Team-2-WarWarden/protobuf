@@ -43,3 +43,10 @@ buf lint
 - 호환 가능한 필드 추가는 현재 `mfs.icd.v3` 패키지에서 진행한다.
 - 호환되지 않는 변경은 새 패키지 버전에서 진행한다.
 - 삭제한 필드와 enum의 번호 및 이름은 `reserved`로 보존하고 재사용하지 않는다.
+
+## 개발용 Pose 확장
+
+`DevelopmentPoseCommand`(Envelope 14)와 capability bit 3은 현재 자산·세션에
+PROJECT_FRAME 위치(m)와 방위(deg)를 설정하는 선택적 개발 기능이다.
+기존 필드 번호를 유지하며 command_id, 유효시간, 유한 좌표와 0 <= 방위 < 360을 검증한다.
+장비 동작/멱등 처리/권한은 소비 프로젝트의 책임이다.

@@ -25,6 +25,7 @@ if(WARWARDEN_PROTOCOL_BUILD_TESTS)
 
     enable_testing()
     add_executable(warwarden_protocol_tests
+        tests/development_pose_test.cpp
         tests/protobuf_codec_test.cpp
         tests/protocol_status_test.cpp)
     target_link_libraries(warwarden_protocol_tests
