@@ -53,8 +53,8 @@ std::vector<std::pair<c2::Envelope, std::vector<std::byte>>> golden_packets() {
          bytes("22160A0E0803100118012002280130013801100118013002")},
         {c2::Envelope{c2::EffectorTurretCommand{
              header(c2::ComponentId::command_and_control, c2::ComponentId::effector_asset),
-             1, 1, 0, 0, 2}},
-         bytes("2A160A0E0803100118012002280330013801100118013002")},
+             1, 0, 0, 2}},
+         bytes("2A140A0E080310011801200228033001380110013002")},
         {c2::Envelope{c2::AttackCommand{
              header(c2::ComponentId::command_and_control, c2::ComponentId::effector_asset),
              1, 1, c2::AttackAction::arm, 0, 2}},
@@ -177,7 +177,7 @@ TEST(ProtobufCodecTest, PreservesGlobalTrackIdBeyondThirtyTwoBitsInEffectorComma
         static_cast<std::uint64_t>(std::numeric_limits<std::uint32_t>::max()) + 7;
     c2::EffectorTurretCommand point{
         header(c2::ComponentId::command_and_control, c2::ComponentId::effector_asset),
-        1, track_id, 10, 5, 2};
+        1, 10, 5, 2};
     c2::AttackCommand attack{
         header(c2::ComponentId::command_and_control, c2::ComponentId::effector_asset),
         2, track_id, c2::AttackAction::arm, 0, 2};
@@ -188,9 +188,8 @@ TEST(ProtobufCodecTest, PreservesGlobalTrackIdBeyondThirtyTwoBitsInEffectorComma
         c2::protobuf::encode(c2::Envelope{attack}));
     ASSERT_TRUE(std::holds_alternative<c2::Envelope>(decoded_point));
     ASSERT_TRUE(std::holds_alternative<c2::Envelope>(decoded_attack));
-    EXPECT_EQ(std::get<c2::EffectorTurretCommand>(
-                  std::get<c2::Envelope>(decoded_point).payload).target_id,
-              track_id);
+    EXPECT_FLOAT_EQ(std::get<c2::EffectorTurretCommand>(
+        std::get<c2::Envelope>(decoded_point).payload).target_pan_deg, 10);
     EXPECT_EQ(std::get<c2::AttackCommand>(
                   std::get<c2::Envelope>(decoded_attack).payload).target_id,
               track_id);
@@ -287,5 +286,16 @@ TEST(ProtobufCodecTest, RejectsRegistrationWithoutIdentityOrWithInvalidContract)
     registration.role = c2::AssetRole::observation;
     EXPECT_THROW(
         (void)c2::protobuf::encode(c2::Envelope{registration}), std::invalid_argument);
+}
+TEST(ProtobufCodecTest, ManualPointingIgnoresRemovedTargetFieldAndDoesNotEmitIt) {
+    const auto legacy = bytes("2A160A0E0803100118012002280330013801100118013002");
+    const auto decoded = c2::protobuf::decode(legacy);
+    ASSERT_TRUE(std::holds_alternative<c2::Envelope>(decoded));
+    const auto& envelope = std::get<c2::Envelope>(decoded);
+    const auto& manual = std::get<c2::EffectorTurretCommand>(envelope.payload);
+    EXPECT_EQ(manual.command_id, 1);
+    EXPECT_EQ(manual.valid_until_us, 2);
+    EXPECT_EQ(c2::protobuf::encode(envelope),
+              bytes("2A140A0E080310011801200228033001380110013002"));
 }
 }  // namespace

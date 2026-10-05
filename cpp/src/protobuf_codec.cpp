@@ -320,7 +320,6 @@ std::vector<std::byte> encode_message(const EffectorTurretCommand& message) {
     std::vector<std::byte> output;
     put_header(output, message);
     put_uint(output, 2, message.command_id);
-    put_uint(output, 3, message.target_id);
     put_float(output, 4, message.target_pan_deg);
     put_float(output, 5, message.target_tilt_deg);
     put_uint(output, 6, message.valid_until_us);
@@ -638,10 +637,6 @@ bool decode_message(const std::span<const std::byte> bytes, EffectorTurretComman
             case 2:
                 if (!read_uint(reader, type, integer)) return false;
                 value.command_id = static_cast<std::uint32_t>(integer);
-                return true;
-            case 3:
-                if (!read_uint(reader, type, integer)) return false;
-                value.target_id = integer;
                 return true;
             case 4:
                 return read_float(reader, type, value.target_pan_deg);

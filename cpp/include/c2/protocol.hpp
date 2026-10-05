@@ -218,7 +218,6 @@ struct ObservationTurretCommand {
 struct EffectorTurretCommand {
     MessageHeader header;
     std::uint32_t command_id{};
-    std::uint64_t target_id{};
     float target_pan_deg{};
     float target_tilt_deg{};
     std::uint64_t valid_until_us{};

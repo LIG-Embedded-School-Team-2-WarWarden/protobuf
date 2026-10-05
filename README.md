@@ -4,6 +4,10 @@ WarWarden의 C2, 관측 자산, 효과기 자산이 공유하는 MFS Protobuf v3
 C++20 참조 구현이다. 이 저장소가 메시지 필드 번호, wire format, 공통 유효성
 검사의 단일 원본이다.
 
+수동 `EffectorTurretCommand`는 표적 ID 없이 각도만 요청한다. 기존 field 3과
+`target_id` 이름은 reserved로 유지한다. 구 수신기는 새 명령을 거부할 수 있으므로
+C2와 자산을 함께 갱신한다. `AttackCommand.target_id`와 자동추적의 `track_id`는 유지한다.
+
 ## 구성
 
 - `proto/mfs/icd/v3/mfs.proto`: 언어 중립 메시지 계약
