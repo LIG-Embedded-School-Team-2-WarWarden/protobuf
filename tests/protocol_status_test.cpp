@@ -310,7 +310,7 @@ TEST(EnvelopeContractTest, IdentifiesAndValidatesEveryPayloadType) {
             1, c2::ObservationTurretCommandType::home, 0, 0, 1'000'001}},
         c2::Envelope{c2::EffectorTurretCommand{
             header(c2::ComponentId::command_and_control, c2::ComponentId::effector_asset),
-            1, 1, 0, 0, 1'000'001}},
+            1, 0, 0, 1'000'001}},
         c2::Envelope{valid_attack_command()},
         c2::Envelope{valid_effector_status()},
         c2::Envelope{valid_ack()},

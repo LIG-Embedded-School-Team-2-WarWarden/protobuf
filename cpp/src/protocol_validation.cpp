@@ -297,7 +297,6 @@ ValidationResult validate(const EffectorTurretCommand& command) {
     ValidationResult result = validate_header(
         command.header, ComponentId::command_and_control, ComponentId::effector_asset);
     if (command.command_id == 0) result.errors.emplace_back("command_id must be non-zero");
-    if (command.target_id == 0) result.errors.emplace_back("target_id must be non-zero");
     if (!finite(command.target_pan_deg) || !finite(command.target_tilt_deg))
         result.errors.emplace_back("target angles must be finite");
     if (command.valid_until_us <= command.header.timestamp_us)

@@ -206,7 +206,8 @@ message EffectorTurretCommand {
   // Automatic tracking uses TargetTrackUpdate and effector-local pointing.
   MessageHeader header = 1;
   uint32 command_id = 2;
-  uint64 target_id = 3;
+  reserved 3;
+  reserved "target_id";
   float target_pan_deg = 4;
   float target_tilt_deg = 5;
   uint64 valid_until_us = 6;
