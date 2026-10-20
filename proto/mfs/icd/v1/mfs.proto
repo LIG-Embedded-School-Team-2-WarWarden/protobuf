@@ -1,0 +1,490 @@
+syntax = "proto3";
+package mfs.icd.v1;
+
+// Team ICD v0.21 / Confluence page 360475 v33. New 1.0 contract, NOT v3 compatible.
+// Field and enum numbers are defined in this shared schema for the console MVP.
+// Do not reuse v3 tags by translating legacy messages at runtime.
+enum Role {
+  ROLE_UNSPECIFIED = 0;
+  ROLE_OBS = 1;
+  ROLE_EFF = 2;
+}
+enum RequestResult {
+  REQUEST_RESULT_UNSPECIFIED = 0;
+  REQUEST_RESULT_ACCEPTED = 1;
+  REQUEST_RESULT_COMPLETED = 2;
+  REQUEST_RESULT_REJECTED = 3;
+  REQUEST_RESULT_FAILED = 4;
+  REQUEST_RESULT_CANCELLED = 5;
+}
+enum RequestConfirmation {
+  REQUEST_CONFIRMATION_UNSPECIFIED = 0;
+  REQUEST_CONFIRMATION_PENDING = 1;
+  REQUEST_CONFIRMATION_CONFIRMED = 2;
+  REQUEST_CONFIRMATION_UNCONFIRMED = 3;
+}
+enum MotionState {
+  MOTION_STATE_UNSPECIFIED = 0;
+  MOTION_STATE_STOPPED = 1;
+  MOTION_STATE_MOVING = 2;
+  MOTION_STATE_UNKNOWN = 3;
+}
+enum MeasurementState {
+  MEASUREMENT_STATE_UNSPECIFIED = 0;
+  MEASUREMENT_STATE_STOPPED = 1;
+  MEASUREMENT_STATE_STARTING = 2;
+  MEASUREMENT_STATE_COLLECTING = 3;
+  MEASUREMENT_STATE_STOPPING = 4;
+  MEASUREMENT_STATE_ERROR = 5;
+  MEASUREMENT_STATE_UNKNOWN = 6;
+}
+enum DeviceState {
+  DEVICE_STATE_UNSPECIFIED = 0;
+  DEVICE_STATE_INITIALIZING = 1;
+  DEVICE_STATE_IDLE = 2;
+  DEVICE_STATE_BUSY = 3;
+  DEVICE_STATE_FAULT = 4;
+  DEVICE_STATE_UNKNOWN = 5;
+}
+enum ClockState {
+  CLOCK_STATE_UNSPECIFIED = 0;
+  CLOCK_STATE_SYNCED = 1;
+  CLOCK_STATE_UNSYNCED = 2;
+  CLOCK_STATE_UNKNOWN = 3;
+}
+enum EmergencyLatchState {
+  EMERGENCY_LATCH_STATE_UNSPECIFIED = 0;
+  EMERGENCY_LATCH_STATE_LATCHED = 1;
+  EMERGENCY_LATCH_STATE_RELEASED = 2;
+  EMERGENCY_LATCH_STATE_UNKNOWN = 3;
+}
+enum StateValidity {
+  STATE_VALIDITY_UNSPECIFIED = 0;
+  STATE_VALIDITY_CURRENT = 1;
+  STATE_VALIDITY_STALE = 2;
+  STATE_VALIDITY_UNAVAILABLE = 3;
+}
+enum ControlMode {
+  CONTROL_MODE_UNSPECIFIED = 0;
+  CONTROL_MODE_AUTO = 1;
+  CONTROL_MODE_MANUAL = 2;
+}
+enum GateState {
+  GATE_STATE_UNSPECIFIED = 0;
+  GATE_STATE_OPEN = 1;
+  GATE_STATE_DRAINING = 2;
+  GATE_STATE_CLOSED = 3;
+}
+enum ObservationMode {
+  OBSERVATION_MODE_UNSPECIFIED = 0;
+  OBSERVATION_MODE_FIXED_VIEW = 1;
+  OBSERVATION_MODE_FOLLOW_OBJECT = 2;
+}
+enum FollowProfile {
+  FOLLOW_PROFILE_UNSPECIFIED = 0;
+  FOLLOW_PROFILE_CONTINUOUS = 1;
+  FOLLOW_PROFILE_STEP_AND_MEASURE = 2;
+}
+enum Capability {
+  CAPABILITY_UNSPECIFIED = 0;
+  CAPABILITY_ORGANIZED_FRAME = 1;
+  CAPABILITY_ABSOLUTE_POINTING = 2;
+  CAPABILITY_MEASURED_ANGLES = 3;
+  CAPABILITY_STOP = 4;
+  CAPABILITY_DRAIN = 5;
+  CAPABILITY_MEASUREMENT_STOP = 6;
+}
+enum ReasonCode {
+  REASON_CODE_UNSPECIFIED = 0;
+  REASON_CODE_INVALID_MESSAGE = 1;
+  REASON_CODE_UNSUPPORTED_TYPE = 2;
+  REASON_CODE_UNSUPPORTED_VERSION = 3;
+  REASON_CODE_UNKNOWN_DEVICE = 4;
+  REASON_CODE_UNKNOWN_SESSION = 5;
+  REASON_CODE_PERMISSION_DENIED = 6;
+  REASON_CODE_ID_CONFLICT = 7;
+  REASON_CODE_STALE_COMMAND = 8;
+  REASON_CODE_EXPIRED_COMMAND = 9;
+  REASON_CODE_INSTALLATION_MISMATCH = 10;
+  REASON_CODE_CAPABILITY_MISSING = 11;
+  REASON_CODE_OUT_OF_RANGE = 12;
+  REASON_CODE_OBSERVATION_STALE = 13;
+  REASON_CODE_CLOCK_UNTRUSTED = 14;
+  REASON_CODE_OBJECT_UNAVAILABLE = 15;
+  REASON_CODE_BUSY = 16;
+  REASON_CODE_ESTOP_LATCHED = 17;
+  REASON_CODE_SUPERSEDED = 18;
+  REASON_CODE_ACK_TIMEOUT = 19;
+  REASON_CODE_COMPLETION_TIMEOUT = 20;
+  REASON_CODE_STOP_UNCONFIRMED = 21;
+  REASON_CODE_STORAGE_UNAVAILABLE = 22;
+  REASON_CODE_RESOURCE_NOT_FOUND = 23;
+  REASON_CODE_INTERNAL_ERROR = 24;
+  REASON_CODE_INVALID_ARGUMENT = 25;
+  REASON_CODE_GUI_DISCONNECTED = 26;
+  REASON_CODE_CONTROL_OWNER_EXISTS = 27;
+  REASON_CODE_DATA_NOT_READY = 28;
+  REASON_CODE_FRAME_SUPERSEDED = 29;
+  REASON_CODE_FRAME_INVALID = 30;
+  REASON_CODE_DRAIN_TIMEOUT = 31;
+  REASON_CODE_MODE_UNSUPPORTED = 32;
+  REASON_CODE_MODE_REVISION_MISMATCH = 33;
+  REASON_CODE_POSE_UNAVAILABLE = 34;
+  REASON_CODE_MOTION_COMPENSATION_REQUIRED = 35;
+  REASON_CODE_ANGLE_READ_FAILED = 36;
+  REASON_CODE_ANGLE_STATUS_STALE = 37;
+  REASON_CODE_PAN_LIMIT = 38;
+  REASON_CODE_TILT_LIMIT = 39;
+  REASON_CODE_CALIBRATION_MISSING = 40;
+  REASON_CODE_OBSERVATION_UNAVAILABLE = 41;
+  REASON_CODE_DEVICE_UNAVAILABLE = 42;
+}
+message Result {
+  string request_id = 1;
+  RequestResult result = 2;
+  optional ReasonCode reason_code = 3;
+  string reported_at = 4;
+  optional string completed_at = 5;
+  optional string detail = 6;
+}
+message Position {
+  double x = 1;
+  double y = 2;
+  double z = 3;
+}
+message AngleSample {
+  uint64 sample_sequence = 1;
+  optional double pan_deg = 2;
+  optional double tilt_deg = 3;
+  optional string pan_measured_at = 4;
+  optional string tilt_measured_at = 5;
+  bool pan_valid = 6;
+  bool tilt_valid = 7;
+  optional ReasonCode angle_error_code = 8;
+}
+message StateMetadata {
+  optional string observed_at = 1;
+  optional string received_at = 2;
+  optional StateValidity validity = 3;
+  optional ReasonCode reason_code = 4;
+  optional bool applicable = 5;
+}
+message RegisterRequest {
+  string request_id = 1;
+  string device_id = 2;
+  Role role = 3;
+  string boot_id = 4;
+  uint32 receive_port = 5;
+  repeated Capability capabilities = 6;
+}
+message RegisterResult {
+  Result outcome = 1;
+  string device_id = 2;
+  string boot_id = 3;
+  optional string connection_session_id = 4;
+  string c2_boot_id = 5;
+}
+message SessionRequired {
+  string device_id = 1;
+  string c2_boot_id = 2;
+}
+message Heartbeat {
+  string boot_id = 1;
+  uint64 sequence = 2;
+}
+message DeviceStatus {
+  string device_id = 1;
+  string reported_at = 2;
+  AngleSample angles = 3;
+  DeviceState device_state = 4;
+  optional MeasurementState measurement_state = 5;
+  MotionState motion_state = 6;
+  map<string, StateMetadata> state_meta = 7;
+  uint32 active_installation_revision = 8;
+  optional ReasonCode fault_code = 9;
+  ClockState clock_state = 10;
+  optional double clock_uncertainty_ms = 11;
+  EmergencyLatchState estop_latch_state = 12;
+  optional bool estop_latched = 13;
+}
+message ErrorReport {
+  string device_id = 1;
+  string occurred_at = 2;
+  ReasonCode reason_code = 3;
+  optional string related_request_id = 4;
+  optional string detail = 5;
+}
+message InstallationSet {
+  string request_id = 1;
+  string device_id = 2;
+  uint32 installation_revision = 3;
+  Position position_m = 4;
+  repeated double mount_rotation = 5;
+  Position sensor_offset_m = 6;
+  string axis_calibration_id = 7;
+}
+message InstallationResult {
+  Result outcome = 1;
+  string device_id = 2;
+  uint32 active_installation_revision = 3;
+}
+message CapabilityReport {
+  string device_id = 1;
+  bool absolute_pointing = 2;
+  bool measured_angle_feedback = 3;
+  bool stop_supported = 4;
+  bool drain_supported = 5;
+  optional uint32 point_completion_timeout_ms = 6;
+  optional uint32 stop_completion_timeout_ms = 7;
+  optional double pan_min_deg = 8;
+  optional double pan_max_deg = 9;
+  optional double tilt_min_deg = 10;
+  optional double tilt_max_deg = 11;
+  string calibration_id = 12;
+  repeated ObservationMode supported_observation_modes = 13;
+  repeated FollowProfile supported_follow_profiles = 14;
+  bool pose_feedback_supported = 15;
+  bool lidar_measurement_stop_supported = 16;
+  string sensor_data_profile_id = 17;
+  bool organized_frame_supported = 18;
+}
+message MeasurementCommand {
+  enum Operation {
+    OPERATION_UNSPECIFIED = 0;
+    OPERATION_START = 1;
+    OPERATION_STOP = 2;
+  }
+  string request_id = 1;
+  Operation operation = 2;
+  string collection_session_id = 3;
+  uint32 installation_revision = 4;
+}
+message MeasurementResult {
+  Result outcome = 1;
+  string collection_session_id = 2;
+  MeasurementState actual_state = 3;
+}
+message Point {
+  uint32 pixel_index = 1;
+  uint32 sdk_depth_raw = 2;
+  bool xyz_valid = 3;
+  optional float x = 4;
+  optional float y = 5;
+  optional float z = 6;
+  optional float intensity = 7;
+}
+message SdkFrameTime {
+  uint64 seconds = 1;
+  uint32 nanoseconds = 2;
+  uint32 sync_type = 3;
+  uint32 sync_state = 4;
+  uint32 frame_protocol_version = 5;
+}
+message PointCloudChunk {
+  enum MotionCompensation {
+    MOTION_COMPENSATION_UNSPECIFIED = 0;
+    MOTION_COMPENSATION_NONE = 1;
+  }
+  string collection_session_id = 1;
+  uint64 frame_id = 2;
+  optional uint64 source_frame_id = 3;
+  optional string captured_start_at = 4;
+  optional string captured_at = 5;
+  optional string captured_end_at = 6;
+  uint32 installation_revision = 7;
+  uint32 observation_mode_revision = 8;
+  string pose_id = 9;
+  uint32 width = 10;
+  uint32 height = 11;
+  string sensor_data_profile_id = 12;
+  uint32 chunk_index = 13;
+  uint32 chunk_count = 14;
+  uint32 total_points = 15;
+  repeated Point points = 16;
+  MotionCompensation motion_compensation = 17;
+  optional string intensity_scale_id = 18;
+  SdkFrameTime sdk_time = 19;
+  optional string clock_mapping_id = 20;
+  optional double clock_uncertainty_ms = 21;
+}
+message ObsPose {
+  string obs_id = 1;
+  string pose_id = 2;
+  string captured_at = 3;
+  uint32 observation_mode_revision = 4;
+  uint32 installation_revision = 5;
+  optional double pan_deg = 6;
+  optional double tilt_deg = 7;
+  bool pan_measured = 8;
+  bool tilt_measured = 9;
+  MotionState motion_state = 10;
+  bool pose_valid = 11;
+  string collection_session_id = 12;
+}
+message ControlOpen {
+  string request_id = 1;
+  string control_session_id = 2;
+  uint64 control_epoch = 3;
+  uint32 installation_revision = 4;
+  ControlMode mode = 5;
+}
+message ControlResult {
+  Result outcome = 1;
+  string active_control_session_id = 2;
+  uint64 control_epoch = 3;
+}
+message PointingCommand {
+  enum Operation {
+    OPERATION_UNSPECIFIED = 0;
+    OPERATION_POINT = 1;
+    OPERATION_STOP = 2;
+    OPERATION_GET_STATUS = 3;
+    OPERATION_DRAIN = 4;
+  }
+  string request_id = 1;
+  string control_session_id = 2;
+  uint64 control_epoch = 3;
+  uint64 command_sequence = 4;
+  Operation operation = 5;
+  string issued_at = 6;
+  optional string expires_at = 7;
+  optional double pan_deg = 8;
+  optional double tilt_deg = 9;
+  uint32 effector_installation_revision = 10;
+  ControlMode origin = 11;
+  optional string collection_session_id = 12;
+  optional string object_id = 13;
+  optional string source_device_id = 14;
+  optional string source_connection_session_id = 15;
+  optional uint64 source_frame_id = 16;
+  optional uint32 observation_installation_revision = 17;
+}
+message PointingResult {
+  Result outcome = 1;
+  string control_session_id = 2;
+  uint64 control_epoch = 3;
+  uint64 command_sequence = 4;
+  MotionState actual_motion_state = 5;
+  optional string drained_request_id = 6;
+  optional uint64 drained_sequence = 7;
+  optional uint64 drained_epoch = 8;
+  optional RequestResult last_command_result = 9;
+}
+message PointingStatus {
+  string device_id = 1;
+  optional string control_session_id = 2;
+  uint64 control_epoch = 3;
+  uint64 last_accepted_sequence = 4;
+  optional string active_request_id = 5;
+  MotionState motion_state = 6;
+  optional double pan_deg = 7;
+  optional double tilt_deg = 8;
+  bool pan_measured = 9;
+  bool tilt_measured = 10;
+  bool completion_verified = 11;
+  Result last_terminal_result = 12;
+  ControlMode control_mode = 13;
+  GateState gate_state = 14;
+  optional string drain_request_id = 15;
+  optional string drained_request_id = 16;
+  optional uint64 drained_sequence = 17;
+  optional uint64 drained_epoch = 18;
+  Result drain_result = 19;
+  optional uint64 active_point_epoch = 20;
+  optional uint64 active_point_sequence = 21;
+  AngleSample angles = 22;
+}
+message ObsModeCommand {
+  string request_id = 1;
+  string obs_control_session_id = 2;
+  uint64 control_epoch = 3;
+  uint32 observation_mode_revision = 4;
+  ObservationMode mode = 5;
+  optional FollowProfile follow_profile = 6;
+  optional string collection_session_id = 7;
+  optional string selected_object_id = 8;
+  uint32 installation_revision = 9;
+}
+message ObsModeResult {
+  Result outcome = 1;
+  string obs_id = 2;
+  uint32 observation_mode_revision = 3;
+  ObservationMode mode = 4;
+  MotionState actual_state = 5;
+  string mode_applied_at = 6;
+}
+message ObsMotionCommand {
+  enum Operation {
+    OPERATION_UNSPECIFIED = 0;
+    OPERATION_POINT = 1;
+    OPERATION_STOP = 2;
+    OPERATION_DRAIN = 3;
+    OPERATION_GET_STATUS = 4;
+  }
+  enum Purpose {
+    PURPOSE_UNSPECIFIED = 0;
+    PURPOSE_FIXED_POSITION = 1;
+    PURPOSE_FOLLOW_UPDATE = 2;
+  }
+  string request_id = 1;
+  string obs_control_session_id = 2;
+  uint64 control_epoch = 3;
+  uint64 command_sequence = 4;
+  Operation operation = 5;
+  optional Purpose purpose = 6;
+  string issued_at = 7;
+  optional string expires_at = 8;
+  optional double pan_deg = 9;
+  optional double tilt_deg = 10;
+  uint32 observation_mode_revision = 11;
+  uint32 installation_revision = 12;
+  optional string collection_session_id = 13;
+  optional string object_id = 14;
+  optional uint64 source_frame_id = 15;
+  optional string source_connection_session_id = 16;
+}
+message ObsMotionResult {
+  Result outcome = 1;
+  string obs_id = 2;
+  string obs_control_session_id = 3;
+  uint64 control_epoch = 4;
+  uint64 command_sequence = 5;
+  MotionState actual_motion_state = 6;
+  optional string drained_request_id = 7;
+  optional uint64 drained_sequence = 8;
+  optional uint64 drained_epoch = 9;
+}
+message Envelope {
+  uint32 version_major = 1;
+  uint32 version_minor = 2;
+  string sender_id = 3;
+  string recipient_id = 4;
+  optional string connection_session_id = 5;
+  string message_id = 6;
+  string sent_at = 7;
+  reserved 100; // Never accept the removed c2.mvp RawEnvelope extension.
+  oneof body {
+    RegisterRequest register_request = 10;
+    RegisterResult register_result = 11;
+    SessionRequired session_required = 12;
+    Heartbeat heartbeat = 13;
+    DeviceStatus device_status = 14;
+    ErrorReport error_report = 15;
+    InstallationSet installation_set = 16;
+    InstallationResult installation_result = 17;
+    CapabilityReport capability_report = 18;
+    MeasurementCommand measurement_command = 19;
+    MeasurementResult measurement_result = 20;
+    PointCloudChunk point_cloud_chunk = 21;
+    ObsPose obs_pose = 22;
+    ControlOpen control_open = 23;
+    ControlResult control_result = 24;
+    PointingCommand pointing_command = 25;
+    PointingResult pointing_result = 26;
+    PointingStatus pointing_status = 27;
+    ObsModeCommand obs_mode_command = 28;
+    ObsModeResult obs_mode_result = 29;
+    ObsMotionCommand obs_motion_command = 30;
+    ObsMotionResult obs_motion_result = 31;
+  }
+}
