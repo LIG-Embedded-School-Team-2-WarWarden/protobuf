@@ -93,6 +93,14 @@ enum Capability {
   CAPABILITY_STOP = 4;
   CAPABILITY_DRAIN = 5;
   CAPABILITY_MEASUREMENT_STOP = 6;
+  CAPABILITY_LASER_CONTROL = 7;
+}
+// Reported physical output state; UNKNOWN must never be treated as OFF.
+enum LaserState {
+  LASER_STATE_UNSPECIFIED = 0;
+  LASER_STATE_OFF = 1;
+  LASER_STATE_ON = 2;
+  LASER_STATE_UNKNOWN = 3;
 }
 enum ReasonCode {
   REASON_CODE_UNSPECIFIED = 0;
@@ -247,6 +255,8 @@ message CapabilityReport {
   bool lidar_measurement_stop_supported = 16;
   string sensor_data_profile_id = 17;
   bool organized_frame_supported = 18;
+  // EFF only. False/absent means laser commands are unsupported.
+  bool laser_control_supported = 19;
 }
 message MeasurementCommand {
   enum Operation {
@@ -454,6 +464,51 @@ message ObsMotionResult {
   optional uint64 drained_sequence = 8;
   optional uint64 drained_epoch = 9;
 }
+// EFF-only optional extension. See TEAM_ICD.md for processing requirements.
+message LaserCommand {
+  enum Operation {
+    OPERATION_UNSPECIFIED = 0;
+    OPERATION_ON = 1;
+    OPERATION_OFF = 2;
+    OPERATION_GET_STATUS = 3;
+  }
+  string request_id = 1;
+  string control_session_id = 2;
+  uint64 control_epoch = 3;
+  // Separate from PointingCommand sequencing, scoped to this control epoch.
+  uint64 command_sequence = 4;
+  Operation operation = 5;
+  string issued_at = 6;
+  // Required for ON; latest time the device may accept this command.
+  optional string expires_at = 7;
+  // Required and positive for ON; absent for OFF/GET_STATUS.
+  // Starts when physical output is enabled, not when the command is received.
+  optional uint32 duration_ms = 8;
+  uint32 effector_installation_revision = 9;
+}
+message LaserResult {
+  Result outcome = 1;
+  string control_session_id = 2;
+  uint64 control_epoch = 3;
+  uint64 command_sequence = 4;
+  LaserState actual_laser_state = 5;
+  // Present only when the output state was actually observed.
+  optional string state_observed_at = 6;
+}
+message LaserStatus {
+  string device_id = 1;
+  optional string control_session_id = 2;
+  uint64 control_epoch = 3;
+  uint64 last_accepted_sequence = 4;
+  // ON request currently responsible for enabled output; absent when OFF.
+  optional string active_request_id = 5;
+  LaserState laser_state = 6;
+  string reported_at = 7;
+  optional string state_observed_at = 8;
+  // Remaining device-timer duration; present only while ON and known.
+  optional uint32 remaining_duration_ms = 9;
+  optional ReasonCode fault_code = 10;
+}
 message Envelope {
   uint32 version_major = 1;
   uint32 version_minor = 2;
@@ -486,5 +541,8 @@ message Envelope {
     ObsModeResult obs_mode_result = 29;
     ObsMotionCommand obs_motion_command = 30;
     ObsMotionResult obs_motion_result = 31;
+    LaserCommand laser_command = 32;
+    LaserResult laser_result = 33;
+    LaserStatus laser_status = 34;
   }
 }
